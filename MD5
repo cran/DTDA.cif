@@ -1,0 +1,15 @@
+da1fcad30881997c553c2e539873d953 *DESCRIPTION
+3a5c2ed94d97cbf999f17b7e58e10152 *NAMESPACE
+caf6d7e94780b7fc7f226dfd0ca9b6ad *R/DTDAcif-package.R
+2b87e2dc7052ee136331b099358ae15c *R/DTDAcif.R
+71ba9eb6e3f1e1eb6c7d965faf613f44 *R/RcppExports.R
+dc2573370487daba6a4c27f3bae5de3d *R/plot.DTDAcif.R
+2b2fa0327f6ec428334368bcace43280 *R/shen.R
+5c1bc91cdec1e40b5d167d58f1fa96ad *R/summary.DTDAcif.R
+61b56b42d2a1559d171c601fbd86dcee *R/zzz.R
+cf6e4b16d85788fe3209bc7ed76d805f *man/DTDA.cif-package.Rd
+9738157478552c61703f304a74b09600 *man/DTDAcif.Rd
+4f1039a7b44d46bc322f92a7b31c2318 *man/plot.DTDAcif.Rd
+2727b75290a0e88f416d6b5b8e22ccfe *man/summary.DTDAcif.Rd
+a6d722f9823871f1c85a502e9dea7178 *src/RcppExports.cpp
+afcd5e2692947e4089412abeddf44bb2 *src/algoritmo.cpp
