@@ -1,6 +1,6 @@
 Package: DTDA.cif
 Title: Doubly Truncated Data Analysis, Cumulative Incidence Functions
-Version: 1.0
+Version: 1.0.1
 Authors@R: c(
   person("Jacobo", "de Uña Álvarez", email = "jacobo@uvigo.es", role = "aut"),
   person("José Carlos", "Soage González", email = "jsoage@uvigo.es", role = "cre"))
@@ -14,8 +14,8 @@ LinkingTo: Rcpp
 LazyData: true
 RoxygenNote: 6.1.1
 NeedsCompilation: yes
-Packaged: 2019-07-31 17:01:54 UTC; UVIGO1
+Packaged: 2019-10-18 11:00:38 UTC; UVIGO1
 Author: Jacobo de Uña Álvarez [aut],
   José Carlos Soage González [cre]
 Repository: CRAN
-Date/Publication: 2019-08-02 09:30:02 UTC
+Date/Publication: 2019-10-18 17:20:02 UTC

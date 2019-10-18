@@ -181,7 +181,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
     w  <- 1 / res
     w <- w / sum(w)
 
-    r <- list(biasf = res[order(x)], cif.mas = w, data = data.frame(x = x[order(x)], z = z[order(x)]))
+    r <- list(biasf = res[order(x)], cif.mas = w, data = data.frame(x = x[order(x)]))
 
     if(!missing(method)){
       warning("'method' is not necessary")
@@ -198,12 +198,12 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
       z <- factor(z)
       z <- as.integer(z)
     }
+    z <- z[order(x)]
   }
 
   # Order w.r.t. x:
   u <- u[order(x)]
   v <- v[order(x)]
-  z <- z[order(x)]
   x <- x[order(x)]
 
 
