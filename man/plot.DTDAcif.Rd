@@ -5,7 +5,7 @@
 \title{plot.DTDAcif}
 \usage{
 \method{plot}{DTDAcif}(x, intervals = FALSE, level = 0.95, main = "",
-  xlab = "", ylab = "", ylim, ...)
+  xlab = "", ylab = "", ylim, xlim, ...)
 }
 \arguments{
 \item{x}{DTDAcif object.}
@@ -21,6 +21,8 @@
 \item{ylab}{A title for the y axis.}
 
 \item{ylim}{Limit over the y axis.}
+
+\item{xlim}{Limit over the x axis.}
 
 \item{...}{Additional parameters.}
 }

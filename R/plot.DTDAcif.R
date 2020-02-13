@@ -11,6 +11,7 @@
 #' @param xlab A title for the x axis.
 #' @param ylab A title for the y axis.
 #' @param ylim Limit over the y axis.
+#' @param xlim Limit over the x axis.
 #' @param ... Additional parameters.
 #'
 #'
@@ -24,7 +25,7 @@
 #'
 #'
 #' @export
-plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = "", ylab = "", ylim, ...) {
+plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = "", ylab = "", ylim, xlim, ...) {
 
   if (!inherits(x, "DTDAcif")) {
     stop("'x' must be of class 'DTDAcif'")
@@ -41,11 +42,12 @@ plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = 
   }
 
   if(missing(ylim)) ylim = c(0,1)
+  if(missing(xlim)) xlim = c(min(r$data$x), max(r$data$x))
 
   if (is.null(r$method)) {
 
     graphics::plot(c(min(r$data$x), r$data$x[order(r$data$x)]), c(0, cumsum(r$cif.mas[order(r$data$x)])),
-                   type = "s", ylim = ylim,
+                   type = "s", ylim = ylim, xlim = xlim,
                    main = main, xlab = xlab, ylab = ylab, ... = ...)
 
     if(!is.null(r$sd.boot)){
@@ -84,6 +86,16 @@ plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = 
       cif <- vector("list", nz)
 
       for(j in 1:nz){
+
+        if(length(r$data$z[r$data$z == j]) == 1){
+          cif[[j]] <- unlist(lapply(1:length(unique(unlist(x[j]))),
+                                    function(i) stats::approx(unlist(x[j])[order(unlist(x[j]))],
+                                                              cumsum(unlist(r$cif[[j]])),
+                                                              xout = unique(unlist(x[j])[order(unlist(x[j]))])[i],
+                                                              ties = max,
+                                                              method = "constant", rule = 2)$y))
+
+        } else {
         cif[[j]] <- unlist(lapply(1:length(unique(unlist(x[j]))),
                                   function(i) stats::approx(unlist(x[j])[order(unlist(x[j]))],
                                                             cumsum(unlist(r$cif[[j]])),
@@ -93,6 +105,8 @@ plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = 
                                                                                               xout = min(unlist(x[j])[order(unlist(x[j]))]),
                                                                                               ties = min)$y,
                                                             method = "constant", rule = 2)$y))
+
+        }
         # pointsb[[j]] <- na.omit(unlist(pointsb[[j]]))
       }
 
@@ -119,8 +133,8 @@ plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = 
 
                            graphics::plot(c(min(unlist(x[i])[order(unlist(x[i]))]),unlist(x[i])[order(unlist(x[i]))]),
                                           c(0, cumsum(unlist(r$cif[i][order(r$data$x[r$data$z == i])]))), type = "s",
-                                          ylim = ylim,
-                                          main = main, xlab = xlab, ylab = ylab, ... = ...)
+                                          ylim = ylim, xlim = xlim,
+                                          main = main, xlab = xlab, ylab = ylab)
                          } else {
                            graphics::lines(c(min(unlist(x[i])[order(unlist(x[i]))]),unlist(x[i])[order(unlist(x[i]))]), c(0,cumsum(unlist(r$cif[[i]][order(order(r$data$x[r$data$z == i]))]))),
                                            type = "s", col = i, ... = ...)
@@ -146,18 +160,40 @@ plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = 
 
       data <- data.frame(cbind(r$data$x, r$data$z))
       colnames(data) <- c("x", "z")
-      cif <- lapply(1:nz, function(j) unlist(lapply(1:length(unique(subset(data.frame(data),
-                                                                           data.frame(data)$z == j))$x),
-                                                    function(i) stats::approx(unlist(unlist(r$data$x[r$data$z == j]))[order(unlist(unlist(r$data$x[r$data$z == j])))],
-                                                                              cumsum(unlist(r$cif.mas[[j]][order(r$data$x[r$data$z == j])])),
-                                                                              xout = unique(subset(data.frame(data),
-                                                                                                   data.frame(data)$z == j)$x[order(subset(data.frame(data), data.frame(data)$z == j)$x)])[i],
-                                                                              ties = max,
-                                                                              yleft = stats::approx(r$data$x[r$data$z == j][order(r$data$x[r$data$z == j])],
-                                                                                                    cumsum(unlist(r$cif.mas[[j]][order(r$data$x[r$data$z == j])])),
-                                                                                                    xout = min(r$data$x[r$data$z == j][order(r$data$x[r$data$z == j])]),
-                                                                                                    ties = min)$y,
-                                                                              method = "constant", rule = 2)$y)))
+
+
+
+      for(j in 1:nz){
+
+        if(length(r$data$z[r$data$z == j]) == 1){
+
+      cif[[j]] <- unlist(lapply(1:length(unique(subset(data.frame(data),
+                                                       data.frame(data)$z == j))$x),
+                                function(i) stats::approx(unlist(unlist(r$data$x[r$data$z == j]))[order(unlist(unlist(r$data$x[r$data$z == j])))],
+                                                          cumsum(unlist(r$cif.mas[[j]][order(r$data$x[r$data$z == j])])),
+                                                          xout = unique(subset(data.frame(data),
+                                                                               data.frame(data)$z == j)$x[order(subset(data.frame(data), data.frame(data)$z == j)$x)])[i],
+                                                          ties = max,
+                                                          method = "constant", rule = 2)$y))
+        } else {
+
+
+          cif[[j]] <- unlist(lapply(1:length(unique(subset(data.frame(data),
+                                                           data.frame(data)$z == j))$x),
+                                    function(i) stats::approx(unlist(unlist(r$data$x[r$data$z == j]))[order(unlist(unlist(r$data$x[r$data$z == j])))],
+                                                              cumsum(unlist(r$cif.mas[[j]][order(r$data$x[r$data$z == j])])),
+                                                              xout = unique(subset(data.frame(data),
+                                                                                   data.frame(data)$z == j)$x[order(subset(data.frame(data), data.frame(data)$z == j)$x)])[i],
+                                                              ties = max,
+                                                              yleft = stats::approx(r$data$x[r$data$z == j][order(r$data$x[r$data$z == j])],
+                                                                                    cumsum(unlist(r$cif.mas[[j]][order(r$data$x[r$data$z == j])])),
+                                                                                    xout = min(r$data$x[r$data$z == j][order(r$data$x[r$data$z == j])]),
+                                                                                    ties = min)$y,
+                                                              method = "constant", rule = 2)$y))
+        }
+
+
+      }
 
       for(w in 1:nz){
         cif[[w]] <- stats::na.omit(cif[[w]])
@@ -181,7 +217,7 @@ plot.DTDAcif <- function(x, intervals = FALSE, level = 0.95,  main = "", xlab = 
                          if (i == 1) {
                            graphics::plot(c(min(r$data$x[r$data$z == i][order(r$data$x[r$data$z == i])]), r$data$x[r$data$z == i][order(r$data$x[r$data$z == i])]),
                                           c(0, cumsum(unlist(r$cif.mas[i][order(r$data$x[r$data$z == i])]))), type = "s",
-                                          ylim = ylim,
+                                          ylim = ylim, xlim = xlim,
                                           main = main, xlab = xlab, ylab = ylab, ... = ...)
                          } else {
                            graphics::lines(c(min(r$data$x[r$data$z == i][order(r$data$x[r$data$z == i])]), r$data$x[r$data$z == i][order(r$data$x[r$data$z == i])]), c(0,cumsum(unlist(r$cif[[i]][order(r$data$x[r$data$z == i])]))),

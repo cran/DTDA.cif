@@ -1,3 +1,7 @@
+
+
+
+
 shen <- function(X, U = NA, V = NA, wt = NA, error = NA, nmaxit = NA) {
 
   D <- cbind(X, U, V)

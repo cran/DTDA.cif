@@ -18,7 +18,7 @@ Nonparametric estimator of the cumulative incidences of competing risks under do
 \details{
 \itemize{
 \item{Package: ‘DTDA.cif’}
-\item{Version: 1.0.1}
+\item{Version: 1.0.2}
 \item{Maintainer: José Carlos Soage González \email{jsoage@uvigo.es}}
 \item{License: GPL-2}
 }

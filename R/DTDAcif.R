@@ -139,7 +139,6 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
   # cat("Call:", "\n")
   # match.call()
 
-
   if (any(!is.numeric(c(x, u, v)))) {
     stop("Arguments 'x', 'u' and 'v' must be numeric")
   }
@@ -152,7 +151,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
     stop("Arguments 'x' and 'v' are missing")
   }
 
-  if(missing(method) && !missing(comp.event)){
+  if(missing(method) && !missing(comp.event) && length(unique(comp.event)) != 1){
     method <- "dep"
     cat("'dep' method used by default", "\n")
   }
@@ -163,8 +162,16 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
     nz <- length(unique(comp.event))
   }
 
+  len_un_z = FALSE
 
-  if(missing(comp.event)){
+  if(!missing(comp.event)){
+    if(length(unique(comp.event)) == 1){
+      len_un_z = TRUE #stop("Length of comp.event must be greater than 1")
+    }
+  }
+
+
+  if(missing(comp.event) || len_un_z == TRUE) {
 
     I <- matrix(sapply(1:n, function(i) as.numeric(u[i] <= x & x <= v[i])),
                 nrow = n, ncol = n, byrow = TRUE)
@@ -178,27 +185,31 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
     Gn[1, ] <- rep(1 / n, n)
 
     res <- algoritmo(Gn = Gn, I = I, J = J, Niter = N.iter, error = error)
-    w  <- 1 / res
+    w  <- 1 / res[order(x)]
     w <- w / sum(w)
 
-    r <- list(biasf = res[order(x)], cif.mas = w, data = data.frame(x = x[order(x)]))
+    r <- list(biasf = res, cif.mas = w, data = data.frame(x = x[order(x)]))
 
     if(!missing(method)){
       warning("'method' is not necessary")
     }
 
   } else {
+
     z <- comp.event
 
-    if (is.integer(z) & any(z == 0)) {
-      z <- z + 1
+    if(any(sort(unique(z)) != seq(1, length(unique(z)))) == TRUE){
+
+      z <- as.numeric(factor(z))
     }
 
     if (is.character(z)) {
       z <- factor(z)
       z <- as.integer(z)
     }
+
     z <- z[order(x)]
+
   }
 
   # Order w.r.t. x:
@@ -254,7 +265,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
     Gn[1, ] <- rep(1 / n, n)
 
     res <- algoritmo(Gn = Gn, I = I, J = J, Niter = N.iter, error = error)
-    w <- 1 / res
+    w <- 1 / res[order(x)]
     w <- w / sum(w)   # Weights for independence (biased estimator if (U,V) depends on Z)
 
     w0 <- vector("list", length(unique(z)))
@@ -275,7 +286,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
 
     ties <- ifelse(length(x) == length(unique(x)), FALSE, TRUE)
 
-    if(missing(comp.event)){
+    if(missing(comp.event) || len_un_z == TRUE){
 
       data <- cbind(x, u , v)
 
@@ -305,7 +316,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
         Gn[1, ] <- rep(1 / n, n)
 
         res <- algoritmo(Gn = Gn, I = I, J = J, Niter = N.iter, error = error)
-        w <- 1 / res
+        w <- 1 / res[order(x)]
         w <- w / sum(w)
 
         rb <- list(biasf = res, cif.mas = w)
@@ -341,10 +352,10 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
 
         cifb <- vector("list", length = nz)
 
-        cifb  <- lapply(1:nz, function(i) cifb[[i]] <- matrix(0, B, length(which(unlist(r$cif.mas[i]) != 0))))
+        cifb <- lapply(1:nz, function(i) cifb[[i]] <- matrix(0, B, length(which(unlist(r$cif.mas[i]) != 0))))
 
         if(ties == TRUE){
-          cifb  <- lapply(1:nz, function(i) cifb[[i]] <- matrix(0, B, length(unique(x[z==i]))))
+          cifb  <- lapply(1:nz, function(i) cifb[[i]] <- matrix(0, B, length(unique(x[z == i]))))
         }
 
         pb <- utils::txtProgressBar(min = 0, max = B , style = 3)
@@ -353,6 +364,11 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
           utils::setTxtProgressBar(pb, b)
           rem <- sample(1:n, n, replace = TRUE)
           rem <- data.frame(data[rem, ])
+
+          while(stats::var(rem$z) == 0){
+            rem <- sample(1:n, n, replace = TRUE)
+            rem <- data.frame(data[rem, ])
+          }
 
           I <- matrix(sapply(1:n, function(i) as.numeric(rem$u[i] <= rem$x & rem$x <= rem$v[i])),
                       nrow = n, ncol = n, byrow = TRUE)
@@ -366,7 +382,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
           Gn[1, ] <- rep(1 / n, n)
 
           res <- algoritmo(Gn = Gn, I = I, J = J, Niter = N.iter, error = error)
-          w <- 1 / res
+          w <- 1 / res[order(x)]
           w <- w / sum(w)   # Weights for independence (biased estimator if (U, V) depends on Z)
 
           w0 <- vector("list", nz)
@@ -448,7 +464,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
 
         for (i in  length(unique(r$data$z)):1) {
 
-          x[i]   <- list(unique(r$data$x[r$data$z == i]))
+          x[i] <- list(unique(r$data$x[r$data$z == i]))
 
         }
 
@@ -472,6 +488,11 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
           utils::setTxtProgressBar(pb, b)
           rem <- sample(1:n, n, replace = TRUE)
           rem <- data.frame(data[rem, ])
+
+          while(stats::var(rem$z) == 0){
+            rem <- sample(1:n, n, replace = TRUE)
+            rem <- data.frame(data[rem, ])
+          }
 
           lurz <- length(unique(rem$z))
           x1   <- vector("list", lurz)
@@ -504,19 +525,19 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
 
           pointsb <- vector("list", nz)
 
-          if(length(unique(rem[, 1])) == 1 | any(lapply(1:nz, function(i) length(unique(unlist(rb$time[[i]])))) == 1)) {
-            num <- which(lapply(1:nz, function(i) length(unique(unlist(rb$time[[i]])))) == 1)
+          #if(length(unique(rem[, 1])) == 1 | any(lapply(1:nz, function(i) length(unique(unlist(rb$time[[i]])))) == 1)) {
+          # num <- which(lapply(1:nz, function(i) length(unique(unlist(rb$time[[i]])))) == 1)
 
-            pointsb[[num]] <- rep(max(cumsum(unlist(rb$cif))), ncol(cifb[[num]]))
-
-            for(i in 1:length(pointsb)){
-              if(i != num){
+          #  pointsb[[num]] <- rep(max(cumsum(unlist(rb$cif))), ncol(cifb[[num]]))
+          #
+          #for(i in 1:length(pointsb)){
+              #   if(i != num){
                 pointsb[[i]] <- rep(0, ncol(cifb[[i]]))
-              }
-            }
+                #  }
+                # }
 
-            pointsb[[i]] <- rep(max(cumsum(unlist(rb$cif))), ncol(cifb[[num]]))
-          } else{
+                # pointsb[[i]] <- rep(max(cumsum(unlist(rb$cif))), ncol(cifb[[num]]))
+            #} else{
 
             pointsb <-  lapply(1:nz, function(j) unlist(lapply(1:length(unique(unlist(x[j]))),
                                                                function(i) stats::approx(unlist(rb$time[j])[order(unlist(rb$time[j]))],
@@ -527,7 +548,7 @@ DTDAcif <- function(x, u, v, comp.event, method = c("indep", "dep"), boot = F, B
                                                                                          yright = max(cumsum(unlist(rb$cif[[j]]))),
                                                                                          method = "constant", rule = 2)$y)))
 
-          }
+          #}
 
           for(w in 1:nz){
 
